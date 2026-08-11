@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>月相羅針 計算PoC v0.1</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero">
+      <p class="eyebrow">春華プロジェクト｜技術検証</p>
+      <h1>月相羅針 計算PoC v0.1</h1>
+      <p class="lead">出生情報から太陽・月の黄経と角度差を計算し、技術確認用の仮8分類へ受け渡します。</p>
+    </header>
+
+    <section class="notice" aria-label="重要なお知らせ">
+      <strong>重要：</strong>
+      この画面のP01〜P08・仮分類1〜8は、月相羅針の正式仕様ではありません。
+      360°を45°ずつ8等分した、プログラム動作確認用の暫定仕様です。
+    </section>
+
+    <section class="card">
+      <h2>出生情報を入力</h2>
+
+      {% if errors %}
+      <div class="error-box" role="alert">
+        <strong>入力または計算内容を確認してください。</strong>
+        <ul>
+          {% for error in errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        <div class="form-grid">
+          <label>
+            <span>生年月日</span>
+            <input type="date" name="birth_date" value="{{ form.birth_date }}" required>
+          </label>
+
+          <label>
+            <span>出生時間</span>
+            <input type="time" name="birth_time" value="{{ form.birth_time }}" required>
+          </label>
+
+          <label class="full-width">
+            <span>出生地</span>
+            <input
+              type="text"
+              name="birth_place"
+              value="{{ form.birth_place }}"
+              placeholder="例：兵庫県小野市"
+              autocomplete="address-level2"
+              required
+            >
+            <small>PoC v0.1では日本国内として Asia/Tokyo を使用します。</small>
+          </label>
+        </div>
+
+        <button type="submit">計算する</button>
+      </form>
+    </section>
+
+    {% if result %}
+    <section class="card result-card" aria-live="polite">
+      <div class="result-heading">
+        <div>
+          <p class="eyebrow">計算結果</p>
+          <h2>{{ result.phase_id }}｜{{ result.phase_name }}</h2>
+        </div>
+        <span class="provisional-badge">仮分類</span>
+      </div>
+
+      <dl class="result-list">
+        <div><dt>出生データ</dt><dd>{{ result.birth_data }}</dd></div>
+        <div><dt>タイムゾーン</dt><dd>{{ result.timezone }}</dd></div>
+        <div><dt>UTC日時</dt><dd>{{ result.utc_datetime }}</dd></div>
+        <div><dt>ユリウス日</dt><dd>{{ "%.8f"|format(result.julian_day) }}</dd></div>
+        <div><dt>太陽黄経</dt><dd>{{ "%.8f"|format(result.sun_longitude) }}°</dd></div>
+        <div><dt>月黄経</dt><dd>{{ "%.8f"|format(result.moon_longitude) }}°</dd></div>
+        <div><dt>太陽と月の角度差</dt><dd>{{ "%.8f"|format(result.angle_difference) }}°</dd></div>
+        <div><dt>仮8分類ID</dt><dd>{{ result.phase_id }}</dd></div>
+        <div><dt>仮8分類名称</dt><dd>{{ result.phase_name }}</dd></div>
+        <div><dt>仮分類角度範囲</dt><dd>{{ result.phase_range }}</dd></div>
+      </dl>
+
+      <p class="calculation-note">
+        計算は地心・トロピカル黄経を使用。計算エンジン：{{ result.ephemeris_mode }}。
+      </p>
+    </section>
+    {% endif %}
+
+    <footer>
+      <p>月相羅針 計算PoC v0.1｜正式占術仕様を確定するものではありません。</p>
+    </footer>
+  </main>
+</body>
+</html>
